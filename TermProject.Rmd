@@ -1,0 +1,59 @@
+---
+title: "TermProject"
+author: "Jacob Mitchell"
+date: "3/17/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+rm(list = ls())
+source("/Users/jacobmitchell/Documents/STAT6440/functions/myfunctions.R")
+hospital <- read.csv("/Users/jacobmitchell/Documents/STAT6440/csvs/dataset.csv")
+library(rpart)
+library(rpart.plot)
+library(caret)
+hospital$hospital_death <- as.factor(hospital$hospital_death)
+levels(hospital$hospital_death) <- c("0", "1")
+hospital <- subset(hospital, select = -c(encounter_id, patient_id, hospital_id, X))
+```
+## Partitioning the Data
+```{r partition}
+RNGkind(sample.kind = "Rounding")
+set.seed(0) ## set seed so that you get same partition each time
+p2 <- partition.2(hospital, 0.7) ## creating 70:30 partition
+training.data <- p2$data.train
+test.data <- p2$data.test
+```
+## Note about initial variable selection
+encounter_id, patient_id, hospital_id, X all seem to not hold information worth regressing or building a model on, so these can be dropped. 
+
+## Feature Selection
+We have a model that has 85 features. This is a large amount of potential regressors for a logistic regression model. Given this, we are going to use LASSO to limit our feature selection.
+```{r lasso}
+library(glmnet)
+# convert data to matrix type
+trainX <- as.matrix(training.data[, -81])
+testX <- as.matrix(test.data[, -81])
+trainY <- training.data$hospital_death
+lasso <- glmnet(x = trainX, y = trainY, alpha = 1, family = "binomial")
+plot(lasso, xvar = "lambda", main = "Lasso regression")
+```
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
