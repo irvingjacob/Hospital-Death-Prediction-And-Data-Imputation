@@ -14,7 +14,7 @@ library(rpart.plot)
 library(caret)
 hospital$hospital_death <- as.factor(hospital$hospital_death)
 levels(hospital$hospital_death) <- c("0", "1")
-hospital <- subset(hospital, select = -c(encounter_id, patient_id, hospital_id, X))
+hospital <- subset(hospital, select = -c(encounter_id, patient_id, X))
 ```
 ## Partitioning the Data
 ```{r partition}
@@ -27,6 +27,25 @@ test.data <- p2$data.test
 ## Note about initial variable selection
 encounter_id, patient_id, hospital_id, X all seem to not hold information worth regressing or building a model on, so these can be dropped. 
 
+```{r missingData}
+sum(colSums(is.na(hospital[,1:2])) > 0)
+sum(!complete.cases(hospital))
+sum(!complete.cases(hospital[-1]))
+```
+```{r dataCleaning}
+install.packages("missForest")
+library(missForest)
+hospital.imp <- missForest(hospital)
+
+```
+
+
+```{r impute}
+library(mice)
+imputed_Data <- mice(hospital, m=2, maxit = 25, method = 'pmm', seed = 500)
+summary(imputed_Data)
+```
+
 ## Feature Selection
 We have a model that has 85 features. This is a large amount of potential regressors for a logistic regression model. Given this, we are going to use LASSO to limit our feature selection.
 ```{r lasso}
@@ -38,6 +57,7 @@ trainY <- training.data$hospital_death
 lasso <- glmnet(x = trainX, y = trainY, alpha = 1, family = "binomial")
 plot(lasso, xvar = "lambda", main = "Lasso regression")
 ```
+
 ## R Markdown
 
 This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
