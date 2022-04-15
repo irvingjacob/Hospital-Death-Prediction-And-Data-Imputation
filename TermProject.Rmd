@@ -11,7 +11,7 @@ rm(list = ls())
 source("G:/BGSU/Spring_2022/STAT_6440_Data_Mining/myFunctions.r")
 
 # hospital <- read.csv("/Users/jacobmitchell/Documents/STAT6440/csvs/dataset.csv")
-hosptial <- read.csv("../archive/dataset.csv")
+hospital <- read.csv("../archive/dataset.csv")
 
 library(rpart)
 library(rpart.plot)
@@ -55,7 +55,7 @@ imputed_Data <- mice(hospital, m=2, maxit = 25, method = 'pmm', seed = 500)
 summary(imputed_Data)
 
 # Added 4/14/22 to generate and save off the data
-hospital_mice <- as.data.frame(complete.mids(imputed_Data))
+hospital_mice <- as.data.frame(complete(imputed_Data))
 write.csv(hospital_mice, "../archive/dataset_mice_output.csv")
 print("CSV written.")
 
