@@ -7,8 +7,12 @@ output: html_document
 
 ```{r setup, include=FALSE}
 rm(list = ls())
-source("/Users/jacobmitchell/Documents/STAT6440/functions/myfunctions.R")
-hospital <- read.csv("/Users/jacobmitchell/Documents/STAT6440/csvs/dataset.csv")
+#source("/Users/jacobmitchell/Documents/STAT6440/functions/myfunctions.R")
+source("G:/BGSU/Spring_2022/STAT_6440_Data_Mining/myFunctions.r")
+
+# hospital <- read.csv("/Users/jacobmitchell/Documents/STAT6440/csvs/dataset.csv")
+hosptial <- read.csv("../archive/dataset.csv")
+
 library(rpart)
 library(rpart.plot)
 library(caret)
@@ -25,7 +29,12 @@ training.data <- p2$data.train
 test.data <- p2$data.test
 ```
 ## Note about initial variable selection
-encounter_id, patient_id, hospital_id, X all seem to not hold information worth regressing or building a model on, so these can be dropped. 
+encounter_id, patient_id, hospital_id, X all seem to not hold information worth regressing or building a model on, so these can be dropped.
+
+
+I think we should keep hostpital_id, even though it may not seem relevant, it is
+and indication of which hospital the patient stayed at, which could be a factor
+in their survival. - DRM
 
 ```{r missingData}
 sum(colSums(is.na(hospital[,1:2])) > 0)
@@ -44,6 +53,12 @@ hospital.imp <- missForest(hospital)
 library(mice)
 imputed_Data <- mice(hospital, m=2, maxit = 25, method = 'pmm', seed = 500)
 summary(imputed_Data)
+
+# Added 4/14/22 to generate and save off the data
+hospital_mice <- as.data.frame(complete.mids(imputed_Data))
+write.csv(hospital_mice, "../archive/dataset_mice_output.csv")
+print("CSV written.")
+
 ```
 
 ## Feature Selection
