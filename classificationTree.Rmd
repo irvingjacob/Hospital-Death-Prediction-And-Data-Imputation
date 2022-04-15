@@ -1,0 +1,207 @@
+---
+title: "fittingModels"
+author: "Jacob Mitchell"
+date: "4/15/2022"
+output: html_document
+---
+## Read in the Data
+
+```{r setup}
+rm(list = ls())
+source("/Users/jacobmitchell/Documents/STAT6440/functions/myfunctions.R")
+hospital <- read.csv("/Users/jacobmitchell/Documents/STAT6440/csvs/dataset_mice_output.csv")
+hospital$hospital_death <- as.factor(hospital$hospital_death)
+levels(hospital$hospital_death) <- c("0", "1")
+hospital = subset(hospital, select = -c(apache_4a_hospital_death_prob, apache_4a_icu_death_prob))
+```
+## Data Munging
+Changing non numerical factors to be factors, and convert ethnicity, admit source, etc to numerical factors. 
+apache_4a_hospital_death_prob, apache_4a_icu_death_prob were dropped in the prediction process since we don't have the model that created these probablities, and want to see what other factors play a role in prediction of death.
+```{r dataCleaning}
+vals <- unique(hospital$ethnicity)
+hospital$ethnicity <- as.factor(hospital$ethnicity)
+hospital$ethnicity <- ifelse(hospital$ethnicity == "Caucasian", 1, hospital$ethnicity)
+hospital$gender <- ifelse(hospital$ethnicity == "M", 0, 1)
+hospital$icu_admit_source <- as.factor(hospital$icu_admit_source)
+hospital$icu_admit_source <- ifelse(hospital$icu_admit_source == "Accident & Emergency", 0, hospital$icu_admit_source)
+hospital$icu_admit_source <- ifelse(hospital$icu_admit_source == "Operating Room / Recovery", 1, hospital$icu_admit_source)
+hospital$icu_admit_source <- ifelse(hospital$icu_admit_source == "Floor", 2, hospital$icu_admit_source)
+hospital$icu_admit_source <- ifelse(hospital$icu_admit_source == "Other Hospital", 3, hospital$icu_admit_source)
+hospital$icu_admit_source <- ifelse(hospital$icu_admit_source == "Other ICU", 4, hospital$icu_admit_source)
+hospital$icu_stay_type <- as.factor(hospital$icu_stay_type)
+hospital$icu_stay_type <- ifelse(hospital$icu_stay_type == "admit", 0, hospital$icu_stay_type)
+hospital$icu_stay_type <- ifelse(hospital$icu_stay_type == "readmit", 1, hospital$icu_stay_type)
+hospital$icu_stay_type <- ifelse(hospital$icu_stay_type == "transfer", 2, hospital$icu_stay_type)
+hospital$icu_type <- as.factor(hospital$icu_type)
+hospital$icu_type <- ifelse(hospital$icu_type == "Med-Surg ICU", 0, hospital$icu_type)
+hospital$icu_type <- ifelse(hospital$icu_type == "MICU", 1, hospital$icu_type)
+hospital$icu_type <- ifelse(hospital$icu_type == "CTICU", 2, hospital$icu_type)
+hospital$icu_type <- ifelse(hospital$icu_type == "CCU-CTICU", 3, hospital$icu_type)
+hospital$icu_type <- ifelse(hospital$icu_type == "Neuro ICU", 4, hospital$icu_type)
+hospital$icu_type <- ifelse(hospital$icu_type == "SICU", 5, hospital$icu_type)
+hospital$apache_3j_bodysystem <- as.factor(hospital$apache_3j_bodysystem)
+hospital$apache_3j_bodysystem <- ifelse(hospital$apache_3j_bodysystem == "Cardiovascular", 0, hospital$apache_3j_bodysystem)
+hospital$apache_3j_bodysystem <- ifelse(hospital$apache_3j_bodysystem == "Metabolic", 1, hospital$apache_3j_bodysystem)
+hospital$apache_3j_bodysystem <- ifelse(hospital$apache_3j_bodysystem == "Nuerological", 2, hospital$apache_3j_bodysystem)
+hospital$apache_3j_bodysystem <- ifelse(hospital$apache_3j_bodysystem == "Gastrointestinal", 3, hospital$apache_3j_bodysystem)
+hospital$apache_3j_bodysystem <- ifelse(hospital$apache_3j_bodysystem == "Metabolic", 4, hospital$apache_3j_bodysystem)
+hospital$apache_3j_bodysystem <- ifelse(hospital$apache_3j_bodysystem == "Musculoskeletal/Skin", 5, hospital$apache_3j_bodysystem)
+hospital$apache_3j_bodysystem <- ifelse(hospital$apache_3j_bodysystem == "Respiratory", 6, hospital$apache_3j_bodysystem)
+hospital$apache_3j_bodysystem <- ifelse(hospital$apache_3j_bodysystem == "Trauma", 7, hospital$apache_3j_bodysystem)
+hospital$apache_3j_bodysystem <- ifelse(hospital$apache_3j_bodysystem == "Genitourinary", 8, hospital$apache_3j_bodysystem)
+hospital$apache_2_bodysystem <- as.factor(hospital$apache_2_bodysystem)
+hospital$apache_2_bodysystem <- ifelse(hospital$apache_2_bodysystem == "Cardiovascular", 0, hospital$apache_2_bodysystem)
+hospital$apache_2_bodysystem <- ifelse(hospital$apache_2_bodysystem == "Metabolic", 1, hospital$apache_2_bodysystem)
+hospital$apache_2_bodysystem <- ifelse(hospital$apache_2_bodysystem == "Nuerological", 2, hospital$apache_2_bodysystem)
+hospital$apache_2_bodysystem <- ifelse(hospital$apache_2_bodysystem == "Gastrointestinal", 3, hospital$apache_2_bodysystem)
+hospital$apache_2_bodysystem <- ifelse(hospital$apache_2_bodysystem == "Metabolic", 4, hospital$apache_2_bodysystem)
+hospital$apache_2_bodysystem <- ifelse(hospital$apache_2_bodysystem == "Musculoskeletal/Skin", 5, hospital$apache_2_bodysystem)
+hospital$apache_2_bodysystem <- ifelse(hospital$apache_2_bodysystem == "Respiratory", 6, hospital$apache_2_bodysystem)
+hospital$apache_2_bodysystem <- ifelse(hospital$apache_2_bodysystem == "Trauma", 7, hospital$apache_2_bodysystem)
+hospital$apache_2_bodysystem <- ifelse(hospital$apache_2_bodysystem == "Genitourinary", 8, hospital$apache_2_bodysystem)
+```
+## Data Partition on MICE imputed dataset
+
+```{r dataPartition}
+RNGkind(sample.kind = "Rounding")
+set.seed(0) ## set seed so that you get same partition each time
+p2 <- partition.2(hospital, 0.7) ## creating 70:30 partition
+training.data <- p2$data.train
+test.data <- p2$data.test
+```
+
+## Fit Classification Tree on MICE imputed Dataset
+
+```{r pressure}
+library(rpart)
+library(rpart.plot)
+library(caret)
+set.seed(0)
+train_control <- trainControl(method="cv", number=10)
+cv.ct <- train(hospital_death ~ . , data = training.data, method = "rpart",trControl = train_control, tuneLength = 10,metric="Kappa")
+```
+
+```{r plottingTree}
+print(cv.ct)
+plot(cv.ct)
+```
+
+```{r testing}
+cv.ct$finalModel
+prp(cv.ct$finalModel, type = 1, extra = 1, under = TRUE, split.font = 2, varlen = -10)
+```
+
+```{r resultsOfTree}
+
+pred.test.prune = predict(cv.ct$finalModel, test.data, type = 'class')
+
+# create confusion matrix
+confusionMatrix(pred.test.prune, test.data$hospital_death, positive = "1")
+```
+```{r testingWithNewCutoff}
+pred.prob = predict(cv.ct$finalModel, test.data, type = 'prob')
+head(pred.prob)
+cutoff <- 0.25 # if proportion of occurrences of class "yes" > cutoff then predicted label = "yes"
+pred.test.cutoff <- ifelse(pred.prob[,2] >= cutoff, "1", "0")
+confusionMatrix(as.factor(pred.test.cutoff), as.factor(test.data$hospital_death), positive = "1")
+```
+## Fitting Tree on Non Imputed Instances to compare results
+
+```{r normalData}
+rm(list = ls())
+source("/Users/jacobmitchell/Documents/STAT6440/functions/myfunctions.R")
+hospital <- read.csv("/Users/jacobmitchell/Documents/STAT6440/csvs/dataset.csv")
+hospital$hospital_death <- as.factor(hospital$hospital_death)
+levels(hospital$hospital_death) <- c("0", "1")
+hospital = subset(hospital, select = -c(apache_4a_hospital_death_prob, apache_4a_icu_death_prob))
+vals <- unique(hospital$ethnicity)
+hospital$ethnicity <- as.factor(hospital$ethnicity)
+hospital$ethnicity <- ifelse(hospital$ethnicity == "Caucasian", 1, hospital$ethnicity)
+hospital$gender <- ifelse(hospital$ethnicity == "M", 0, 1)
+hospital$icu_admit_source <- as.factor(hospital$icu_admit_source)
+hospital$icu_admit_source <- ifelse(hospital$icu_admit_source == "Accident & Emergency", 0, hospital$icu_admit_source)
+hospital$icu_admit_source <- ifelse(hospital$icu_admit_source == "Operating Room / Recovery", 1, hospital$icu_admit_source)
+hospital$icu_admit_source <- ifelse(hospital$icu_admit_source == "Floor", 2, hospital$icu_admit_source)
+hospital$icu_admit_source <- ifelse(hospital$icu_admit_source == "Other Hospital", 3, hospital$icu_admit_source)
+hospital$icu_admit_source <- ifelse(hospital$icu_admit_source == "Other ICU", 4, hospital$icu_admit_source)
+hospital$icu_stay_type <- as.factor(hospital$icu_stay_type)
+hospital$icu_stay_type <- ifelse(hospital$icu_stay_type == "admit", 0, hospital$icu_stay_type)
+hospital$icu_stay_type <- ifelse(hospital$icu_stay_type == "readmit", 1, hospital$icu_stay_type)
+hospital$icu_stay_type <- ifelse(hospital$icu_stay_type == "transfer", 2, hospital$icu_stay_type)
+hospital$icu_type <- as.factor(hospital$icu_type)
+hospital$icu_type <- ifelse(hospital$icu_type == "Med-Surg ICU", 0, hospital$icu_type)
+hospital$icu_type <- ifelse(hospital$icu_type == "MICU", 1, hospital$icu_type)
+hospital$icu_type <- ifelse(hospital$icu_type == "CTICU", 2, hospital$icu_type)
+hospital$icu_type <- ifelse(hospital$icu_type == "CCU-CTICU", 3, hospital$icu_type)
+hospital$icu_type <- ifelse(hospital$icu_type == "Neuro ICU", 4, hospital$icu_type)
+hospital$icu_type <- ifelse(hospital$icu_type == "SICU", 5, hospital$icu_type)
+hospital$apache_3j_bodysystem <- as.factor(hospital$apache_3j_bodysystem)
+hospital$apache_3j_bodysystem <- ifelse(hospital$apache_3j_bodysystem == "Cardiovascular", 0, hospital$apache_3j_bodysystem)
+hospital$apache_3j_bodysystem <- ifelse(hospital$apache_3j_bodysystem == "Metabolic", 1, hospital$apache_3j_bodysystem)
+hospital$apache_3j_bodysystem <- ifelse(hospital$apache_3j_bodysystem == "Nuerological", 2, hospital$apache_3j_bodysystem)
+hospital$apache_3j_bodysystem <- ifelse(hospital$apache_3j_bodysystem == "Gastrointestinal", 3, hospital$apache_3j_bodysystem)
+hospital$apache_3j_bodysystem <- ifelse(hospital$apache_3j_bodysystem == "Metabolic", 4, hospital$apache_3j_bodysystem)
+hospital$apache_3j_bodysystem <- ifelse(hospital$apache_3j_bodysystem == "Musculoskeletal/Skin", 5, hospital$apache_3j_bodysystem)
+hospital$apache_3j_bodysystem <- ifelse(hospital$apache_3j_bodysystem == "Respiratory", 6, hospital$apache_3j_bodysystem)
+hospital$apache_3j_bodysystem <- ifelse(hospital$apache_3j_bodysystem == "Trauma", 7, hospital$apache_3j_bodysystem)
+hospital$apache_3j_bodysystem <- ifelse(hospital$apache_3j_bodysystem == "Genitourinary", 8, hospital$apache_3j_bodysystem)
+hospital$apache_2_bodysystem <- as.factor(hospital$apache_2_bodysystem)
+hospital$apache_2_bodysystem <- ifelse(hospital$apache_2_bodysystem == "Cardiovascular", 0, hospital$apache_2_bodysystem)
+hospital$apache_2_bodysystem <- ifelse(hospital$apache_2_bodysystem == "Metabolic", 1, hospital$apache_2_bodysystem)
+hospital$apache_2_bodysystem <- ifelse(hospital$apache_2_bodysystem == "Nuerological", 2, hospital$apache_2_bodysystem)
+hospital$apache_2_bodysystem <- ifelse(hospital$apache_2_bodysystem == "Gastrointestinal", 3, hospital$apache_2_bodysystem)
+hospital$apache_2_bodysystem <- ifelse(hospital$apache_2_bodysystem == "Metabolic", 4, hospital$apache_2_bodysystem)
+hospital$apache_2_bodysystem <- ifelse(hospital$apache_2_bodysystem == "Musculoskeletal/Skin", 5, hospital$apache_2_bodysystem)
+hospital$apache_2_bodysystem <- ifelse(hospital$apache_2_bodysystem == "Respiratory", 6, hospital$apache_2_bodysystem)
+hospital$apache_2_bodysystem <- ifelse(hospital$apache_2_bodysystem == "Trauma", 7, hospital$apache_2_bodysystem)
+hospital$apache_2_bodysystem <- ifelse(hospital$apache_2_bodysystem == "Genitourinary", 8, hospital$apache_2_bodysystem)
+```
+
+```{r looking}
+library(tidyr)
+hospital = subset(hospital, select = -c(X))
+hospital <- drop_na(hospital)
+```
+
+```{r more}
+RNGkind(sample.kind = "Rounding")
+set.seed(0) ## set seed so that you get same partition each time
+p2 <- partition.2(hospital, 0.7) ## creating 70:30 partition
+training.data <- p2$data.train
+test.data <- p2$data.test
+```
+
+```{r fitting}
+library(rpart)
+library(rpart.plot)
+library(caret)
+set.seed(0)
+train_control <- trainControl(method="cv", number=10)
+cv.ct <- train(hospital_death ~ . , data = training.data, method = "rpart",trControl = train_control, tuneLength = 10,metric="Kappa")
+```
+
+```{r plotsAndSuch}
+print(cv.ct)
+plot(cv.ct)
+```
+
+```{r finalModelSmall}
+cv.ct$finalModel
+prp(cv.ct$finalModel, type = 1, extra = 1, under = TRUE, split.font = 2, varlen = -10)
+```
+
+```{r confusionMatrixSmall}
+pred.test.prune = predict(cv.ct$finalModel, test.data, type = 'class')
+# create confusion matrix
+confusionMatrix(pred.test.prune, test.data$hospital_death, positive = "1")
+```
+
+```{r new method}
+pred.prob = predict(cv.ct$finalModel, test.data, type = 'prob')
+head(pred.prob)
+cutoff <- 0.25 # if proportion of occurrences of class "yes" > cutoff then predicted label = "yes"
+pred.test.cutoff <- ifelse(pred.prob[,2] >= cutoff, "1", "0")
+confusionMatrix(as.factor(pred.test.cutoff), as.factor(test.data$hospital_death), positive = "1")
+```
+## Discussion of Results
+The decision tree with 
