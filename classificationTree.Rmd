@@ -8,11 +8,13 @@ output: html_document
 
 ```{r setup}
 rm(list = ls())
-source("/Users/jacobmitchell/Documents/STAT6440/functions/myfunctions.R")
-hospital <- read.csv("/Users/jacobmitchell/Documents/STAT6440/csvs/dataset_mice_output.csv")
+#source("/Users/jacobmitchell/Documents/STAT6440/functions/myfunctions.R")
+source("G:/BGSU/Spring_2022/STAT_6440_Data_Mining/myFunctions.r") # mine: DRM
+#hospital <- read.csv("/Users/jacobmitchell/Documents/STAT6440/csvs/dataset_mice_output.csv")
+hospital <- read.csv("G:/BGSU/Spring_2022/STAT_6440_Data_Mining/Final_Project/archive/dataset_mice_output.csv") # mine: DRM
 hospital$hospital_death <- as.factor(hospital$hospital_death)
 levels(hospital$hospital_death) <- c("0", "1")
-hospital = subset(hospital, select = -c(apache_4a_hospital_death_prob, apache_4a_icu_death_prob))
+hospital = subset(hospital, select = -c(apache_4a_hospital_death_prob, apache_4a_icu_death_prob, X))
 ```
 ## Data Munging
 Changing non numerical factors to be factors, and convert ethnicity, admit source, etc to numerical factors. 
@@ -107,6 +109,27 @@ cutoff <- 0.25 # if proportion of occurrences of class "yes" > cutoff then predi
 pred.test.cutoff <- ifelse(pred.prob[,2] >= cutoff, "1", "0")
 confusionMatrix(as.factor(pred.test.cutoff), as.factor(test.data$hospital_death), positive = "1")
 ```
+
+## Fit a random forest model on the imputed data set
+I placed this here since the 'normal' data set is also called 'hospital' - DRM
+Number of predictors is 80 -> sqrt(80) ~ 9: use mtry between 5-15, then add some outliers.
+
+```{r randFor}
+library(caret)
+set.seed(0)
+train_control <- trainControl(method="cv", number=10)
+tG <- expand.grid(mtry = c(2, 5:15, 40))
+
+rf <- train(hospital_death ~., data = training.data, method = "rf", ntree = 150, trControl = train_control, tuneGrid = tG)
+
+# save off the workspace to upload to github
+save.image("RFResultsWorkspace.RData")
+
+
+```
+
+
+
 ## Fitting Tree on Non Imputed Instances to compare results
 
 ```{r normalData}
