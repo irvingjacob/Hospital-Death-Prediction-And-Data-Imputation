@@ -122,6 +122,9 @@ tG <- expand.grid(mtry = c(2, 5:15, 40))
 
 rf <- train(hospital_death ~., data = training.data, method = "rf", ntree = 150, trControl = train_control, tuneGrid = tG)
 
+# create prediction from the rf
+#pred.rf <- predict(rf, test.data, type='class')
+
 # save off the workspace to upload to github
 save.image("RFResultsWorkspace.RData")
 
