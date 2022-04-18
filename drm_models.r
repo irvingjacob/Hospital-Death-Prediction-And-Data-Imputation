@@ -1,11 +1,17 @@
 load("RFResultsWorkspace.RData")
 library(caret)
+library(tidyr)
 
-# Load Raw hospital data <- drop all NA values
-hosp_na <- read.csv("C:/Users/Dan Mrachko/Documents/stat6440/dataset.csv")
+# Load Raw hospital data
+hosp <- read.csv("dataset.csv")
+
+# Drop all NA values and save as new data set
+
+# First do some data munging
+hosp_na <- hosp
 hosp_na$hospital_death <- as.factor(hosp_na$hospital_death)
 levels(hosp_na$hospital_death) <- c("0", "1")
-hosp_na = subset(hosp_na, select = -c(apache_4a_hospital_death_prob, apache_4a_icu_death_prob))
+hosp_na = subset(hosp_na, select = -c(encounter_id, patient_id, apache_4a_hospital_death_prob, apache_4a_icu_death_prob, X))
 vals <- unique(hosp_na$ethnicity)
 hosp_na$ethnicity <- as.factor(hosp_na$ethnicity)
 hosp_na$ethnicity <- ifelse(hosp_na$ethnicity == "Caucasian", 1, hosp_na$ethnicity)
@@ -49,3 +55,7 @@ hosp_na$apache_2_bodysystem <- ifelse(hosp_na$apache_2_bodysystem == "Musculoske
 hosp_na$apache_2_bodysystem <- ifelse(hosp_na$apache_2_bodysystem == "Respiratory", 6, hosp_na$apache_2_bodysystem)
 hosp_na$apache_2_bodysystem <- ifelse(hosp_na$apache_2_bodysystem == "Trauma", 7, hosp_na$apache_2_bodysystem)
 hosp_na$apache_2_bodysystem <- ifelse(hosp_na$apache_2_bodysystem == "Genitourinary", 8, hosp_na$apache_2_bodysystem)
+
+# Drop
+hosp_na <- drop_na(hospital)
+# 
