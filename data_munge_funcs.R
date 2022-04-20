@@ -82,6 +82,38 @@ hosp_mode_mean <- function(hospital) {
 }
 
 
+# function for cutoff optimization
+cutoff_opt <- function(test_data, userpred, pos_val) {
+  # pos_val = "1" or "0"
+  # userpred = prediction values from the model
+  # usermod = the model
+  
+  cutoffs = as.vector(seq(0.01, 0.9, by = 0.01))
+  
+  res_mat <- matrix(vector(), nrow = length(cutoffs), ncol = 3, dimnames = list(c(), c("Cutoff", "Accuracy", "Kappa")))
+  
+  for (i in 1:length(cutoffs)) {
+    
+    the_cut = cutoffs[i]
+    
+    model_preds <- ifelse(userpred[,2] > the_cut, "1", "0")
+    confMat <- confusionMatrix(as.factor(model_preds), 
+                               as.factor(test_data$hospital_death), 
+                               positive = pos_val)
+    res_mat[i,1] = the_cut
+    res_mat[i,2] = confMat$overall[1]
+    res_mat[i,3] = confMat$overall[2]
+  
+  }
+  
+  best_acc <- res_mat[which.max(res_mat[,2]),]
+  best_kap <- res_mat[which.max(res_mat[,3]),]
+  
+  return(list(best_kappa = best_kap, best_acc = best_acc, res_matrix = res_mat))
+  
+}
+
+
 ### R function for creating 3 partitions with training, validation and testing set
 ### Input: original dataset name (data)
 ###        proportion of records assigned to training set (prop.train)
