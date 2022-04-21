@@ -36,7 +36,7 @@ lasso_drop_summary <- cbind(lasso_drop_summary, lasso_drop_cutoffs$best_acc)
 colnames(lasso_drop_summary) <- c("Max Kappa", "Max Accuracy")
 
 lasso_mm_summary <- as.data.frame(lasso_mm_cutoffs$best_kappa)
-lasso_mm_summary <- cbind(lasso_mm_cutoffs$best_acc, lasso_mm_cutoffs$best_acc)
+lasso_mm_summary <- cbind(lasso_mm_summary, lasso_mm_cutoffs$best_acc)
 colnames(lasso_mm_summary) <- c("Max Kappa", "Max Accuracy")
 
 
