@@ -85,7 +85,7 @@ CT_MM_PROB <- predict(CT_MM$finalModel, mm.test, type = 'prob')
 
 
 
-# ----------------------------------------
+# -------------------------------------------
 # Logistic Regression Classification (LASSO)
 # Lasso regression was chosen.
 
@@ -122,6 +122,39 @@ LASSO_MM_PRED <- predict(LASSO_MM, s = LASSO_MM$bestTune, mm.test,
 
 
 
+# ---------------------------------------------------------------
+# Bagged Trees (Boot Strap: method 'treebag' Classification (BAG)
+# Random forest models were extremely costly and ineffective to 
+# produce, so instead we are trying out bagging for it's slightly
+# simpler algorithm. Using 75 trees (default is 25) to try and 
+# improve accuracy.
+set.seed(0)
+nbag = 75;
+
+# BAG_MICE
+BAG_MICE <- train(hospital_death ~., data = mice.train, method = "treebag", 
+                  trControl = tC, nbagg = nbag)
+
+# prediction
+BAG_MICE_PRED <- predict(BAG_MICE$finalModel, mice.test, type = 'prob')
+
+# BAG_DROP
+set.seed(0)
+BAG_DROP <- train(hospital_death ~., data = drop.train, method = "treebag", 
+                  trControl = tC, nbagg = nbag)
+
+# prediction
+BAG_DROP_PRED <- predict(BAG_DROP$finalModel, drop.test, type = 'prob')
+
+# BAG_MM
+set.seed(0)
+BAG_MM <- train(hospital_death ~., data = mm.train, method = "treebag", 
+                trControl = tC, nbagg = nbag)
+
+# prediction
+BAG_MM_PRED <- predict(BAG_MM$finalModel, mm.test, type = 'prob')
+
+
 # ----------------------------------
 # Random Forest Classification (RF)
 # Number of predictors is 80 -> sqrt(80) is between 8-9: use mtry = 8, 9, then add outliers.
@@ -131,6 +164,7 @@ tG <- expand.grid(mtry = c(2, 8, 9, 40))
 set.seed(0)
 RF_MICE <- train(hospital_death ~., data = mice.train, method = "rf", 
                  ntree = 100, trControl = tC, tuneGrid = tG)
+
 
 #RF_MICE_PRED <- predict(RF_MICE, mice.test, type = 'prob')
 
