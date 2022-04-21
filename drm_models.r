@@ -154,6 +154,8 @@ BAG_MM <- train(hospital_death ~., data = mm.train, method = "treebag",
 # prediction
 BAG_MM_PRED <- predict(BAG_MM$finalModel, mm.test, type = 'prob')
 
+save(BAG_MICE, BAG_MICE_PRED, BAG_DROP, BAG_DROP_PRED, BAG_MM, BAG_MM_PRED, file = "baggedModels.RData")
+
 
 # ----------------------------------
 # Random Forest Classification (RF)
@@ -179,12 +181,12 @@ RF_DROP <- train(hospital_death ~., data = drop.train, method = "rf",
 
 # RF_MM
 set.seed(0)
-RF_Mm <- train(hospital_death ~., data = mm.train, method = "rf", 
+RF_MM <- train(hospital_death ~., data = mm.train, method = "rf", 
                  ntree = 100, trControl = tC, tuneGrid = tG)
 
 #RF_Mm_PRED <- predict(RF_MM, mm.test, type = 'prob')
 
-
+save(RF_MICE, RF_DROP, RF_MM, file = "RFModels.RData")
 
 
 

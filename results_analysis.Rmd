@@ -14,6 +14,7 @@ library(rpart)
 library(rpart.plot)
 library(glmnet)
 library(tidyr)
+library(pROC)
 RNGkind(sample.kind = "Rounding")
 load("6modelResults.RData")
 
@@ -115,4 +116,14 @@ ct_mm_summary
 ```
  
 
+```{r fig3, fig.align = 'center', fig.width = 6, fig.height = 6, echo=FALSE}
+# Create ROC curves for each model (on test data)
+#lasso_mice_guess <- ifelse(LASSO_MICE_PRED[,2] > 0.24, "1", "0")
 
+
+# roc_LASSO_MICE <- roc(mice.test$hospital_death, LASSO_MICE_PRED)
+# plot.roc(roc_LASSO_MICE, MAIN = "LASSO MICE ROC")
+
+
+
+```
