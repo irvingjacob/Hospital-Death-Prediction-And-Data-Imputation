@@ -17,15 +17,18 @@ library(tidyr)
 library(pROC)
 RNGkind(sample.kind = "Rounding")
 load("6modelResults.RData")
+#load("baggedModels.RData")
+load("RFModels.RData")
+load("RFPredictions.RData")
 
 ```
 
 
-``` {r fig1, fig.align = 'center', fig.width = 12, fig.height = 6, echo = FALSE}
+``` {r Lasso Plots, fig.align = 'center', fig.width = 12, fig.height = 6, echo = FALSE}
 # Compute Optimal Cut-off values for the Lasso Logistic Regression Models
-lasso_mice_cutoffs <- cutoff_opt(mice.test, LASSO_MICE_PRED, pos_val = "0")
-lasso_drop_cutoffs <- cutoff_opt(drop.test, LASSO_DROP_PRED, pos_val = "0")
-lasso_mm_cutoffs <- cutoff_opt(mm.test, LASSO_MM_PRED, pos_val = "0")
+lasso_mice_cutoffs <- cutoff_opt(mice.test, LASSO_MICE_PRED, pos_val = "1")
+lasso_drop_cutoffs <- cutoff_opt(drop.test, LASSO_DROP_PRED, pos_val = "1")
+lasso_mm_cutoffs <- cutoff_opt(mm.test, LASSO_MM_PRED, pos_val = "1")
 
 
 lasso_mice_summary <- as.data.frame(lasso_mice_cutoffs$best_kappa)
@@ -41,7 +44,7 @@ lasso_mm_summary <- cbind(lasso_mm_summary, lasso_mm_cutoffs$best_acc)
 colnames(lasso_mm_summary) <- c("Max Kappa", "Max Accuracy")
 
 
-
+# Generate plots of Kappa and Accuracy vs. Cutoff value
 par(mfrow = c(1,2))
 
 plot(lasso_mice_cutoffs$res_matrix[,c(1,3)], col="blue", type='p', lwd = 2, main="Lasso Regression Cut-off Optimization: Kappa")
@@ -56,26 +59,40 @@ lines(lasso_mm_cutoffs$res_matrix[,c(1,2)], col = "red", type = 'p', lwd = 2)
 grid(nx = NULL, ny=NULL, col = "lightgray")
 legend(x = "bottomright", legend = c("MICE Data Model","NA Dropped Data Model", "Mean/Mode Replaced Data Model"), lty = c(0,1,0), lwd = c(2,2,2), pch = c(1,NA,1), col = c("blue", "green", "red"), cex = 0.9)
 
+# Create Confusion Matrices
+lasso_pred_temp <- ifelse(LASSO_MICE_PRED[,2] > lasso_mice_cutoffs$best_kappa[1], "1", "0")
+lasso_mice_conf <- confusionMatrix(as.factor(lasso_pred_temp), as.factor(mice.test$hospital_death), positive = "1")
+
+lasso_pred_temp <- ifelse(LASSO_DROP_PRED[,2] > lasso_drop_cutoffs$best_kappa[1], "1", "0")
+lasso_drop_conf <- confusionMatrix(as.factor(lasso_pred_temp), as.factor(drop.test$hospital_death), positive = "1")
+
+lasso_pred_temp <- ifelse(LASSO_MM_PRED[,2] > lasso_mm_cutoffs$best_kappa[1], "1", "0")
+lasso_mm_conf <- confusionMatrix(as.factor(lasso_pred_temp), as.factor(mm.test$hospital_death), positive = "1")
+
 
 ```
 
-```{r}
+```{r Lasso Regression Summary}
 lasso_mice_summary
 lasso_drop_summary
 lasso_mm_summary
+
+lasso_mice_conf
+lasso_drop_conf
+lasso_mm_conf
 
 ```
 
 ```{r include=FALSE}
 # Compute Optimal Cut-off values for the Classification Tree Models
-ct_mice_cutoffs <- cutoff_opt(mice.test, CT_MICE_PROB, pos_val = "0")
-ct_drop_cutoffs <- cutoff_opt(drop.test, CT_DROP_PROB, pos_val = "0")
-ct_mm_cutoffs <- cutoff_opt(mm.test, CT_MM_PROB, pos_val = "0")
+ct_mice_cutoffs <- cutoff_opt(mice.test, CT_MICE_PROB, pos_val = "1")
+ct_drop_cutoffs <- cutoff_opt(drop.test, CT_DROP_PROB, pos_val = "1")
+ct_mm_cutoffs <- cutoff_opt(mm.test, CT_MM_PROB, pos_val = "1")
 
 ```
 
 
-``` {r fig2, fig.align = 'center', fig.width = 12, fig.height = 6, echo=FALSE}
+``` {r Class Tree Figs, fig.align = 'center', fig.width = 12, fig.height = 6, echo=FALSE}
 
 ct_mice_summary <- as.data.frame(ct_mice_cutoffs$best_kappa)
 ct_mice_summary <- cbind(ct_mice_summary, ct_mice_cutoffs$best_acc)
@@ -105,25 +122,224 @@ lines(ct_mm_cutoffs$res_matrix[,c(1,2)], col = "red", type = 'p', lwd = 2)
 grid(nx = NULL, ny=NULL, col = "lightgray")
 legend(x = "bottomright", legend = c("MICE Data Model","NA Dropped Data Model", "Mean/Mode Replaced Data Model"), lty = c(0,1,0), lwd = c(2,2,2), pch = c(1,NA,1), col = c("blue", "green", "red"), cex = 0.9)
 
+# Make confusion matrices with the best cutoff values
+ct_pred_temp <- ifelse(CT_MICE_PROB[,2] > ct_mice_cutoffs$best_kappa[1], "1", "0")
+ct_mice_conf <- confusionMatrix(as.factor(ct_pred_temp), as.factor(mice.test$hospital_death), positive = "1")
+
+ct_pred_temp <- ifelse(CT_DROP_PROB[,2] > ct_drop_cutoffs$best_kappa[1], "1", "0")
+ct_drop_conf <- confusionMatrix(as.factor(ct_pred_temp), as.factor(drop.test$hospital_death), positive = "1")
+
+ct_pred_temp <- ifelse(CT_MM_PROB[,2] > ct_mm_cutoffs$best_kappa[1], "1", "0")
+ct_mm_conf <- confusionMatrix(as.factor(ct_pred_temp), as.factor(mm.test$hospital_death), positive = "1")
+
+
 
 ```
 
-```{r}
+```{r Classification Tree Summary}
 ct_mice_summary
 ct_drop_summary
 ct_mm_summary
 
-```
- 
-
-```{r fig3, fig.align = 'center', fig.width = 6, fig.height = 6, echo=FALSE}
-# Create ROC curves for each model (on test data)
-#lasso_mice_guess <- ifelse(LASSO_MICE_PRED[,2] > 0.24, "1", "0")
-
-
-# roc_LASSO_MICE <- roc(mice.test$hospital_death, LASSO_MICE_PRED)
-# plot.roc(roc_LASSO_MICE, MAIN = "LASSO MICE ROC")
-
-
+ct_mice_conf
+ct_drop_conf
+ct_mm_conf
 
 ```
+
+
+```{r Random Forest Plots, fig.align = 'center', fig.width = 12, fig.height = 6, echo=FALSE}
+# Compute predicted values (already done for the other models)
+# RF_MICE_PRED <- predict(RF_MICE, mice.test, type='prob')
+# RF_DROP_PRED <- predict(RF_DROP, drop.test, type='prob')
+# RF_MM_PRED <- predict(RF_MM, mm.test, type='prob')
+# 
+# save(RF_MICE_PRED, RF_DROP_PRED, RF_MM_PRED, file="RFPredictions.RData")
+
+# Optimize Cutoff Values
+rf_mice_cutoffs <- cutoff_opt(mice.test, RF_MICE_PRED, pos_val = "1")
+rf_drop_cutoffs <- cutoff_opt(drop.test, RF_DROP_PRED, pos_val = "1")
+rf_mm_cutoffs <- cutoff_opt(mm.test, RF_MM_PRED, pos_val = "1")
+
+# Save a summary of the results
+rf_mice_summary <- as.data.frame(rf_mice_cutoffs$best_kappa)
+rf_mice_summary <- cbind(rf_mice_summary, rf_mice_cutoffs$best_acc)
+colnames(rf_mice_summary) <- c("At Max Kappa", "At Max Accuracy")
+
+rf_drop_summary <- as.data.frame(rf_drop_cutoffs$best_kappa)
+rf_drop_summary <- cbind(rf_drop_summary, rf_drop_cutoffs$best_acc)
+colnames(rf_drop_summary) <- c("At Max Kappa", "At Max Accuracy")
+
+rf_mm_summary <- as.data.frame(rf_mm_cutoffs$best_kappa)
+rf_mm_summary <- cbind(rf_mm_summary, rf_mm_cutoffs$best_acc)
+colnames(rf_mm_summary) <- c("At Max Kappa", "At Max Accuracy")
+
+# Generate the plots
+par(mfrow = c(1,2))
+
+plot(rf_mice_cutoffs$res_matrix[,c(1,3)], col="blue", type='p', lwd = 2, main="Random Forest Trees Cut-off Optimization: Kappa")
+lines(rf_drop_cutoffs$res_matrix[,c(1,3)], col="green", type='l', lwd = 2)
+lines(rf_mm_cutoffs$res_matrix[,c(1,3)], col = "red", type = 'p', lwd = 2)
+grid(nx = NULL, ny=NULL, col = "lightgray")
+legend(x = "bottom", legend = c("MICE Data Model","NA Dropped Data Model", "Mean/Mode Replaced Data Model"), lty = c(0,1,0), lwd = c(2,2,2), pch = c(1,NA,1), col = c("blue", "green", "red"), cex = 0.9)
+
+plot(rf_mice_cutoffs$res_matrix[,c(1,2)], col="blue", type='p', lwd = 2, main="Random Forest Trees Cut-off Optimization: Accuracy")
+lines(rf_drop_cutoffs$res_matrix[,c(1,2)], col="green", type='l', lwd = 2)
+lines(rf_mm_cutoffs$res_matrix[,c(1,2)], col = "red", type = 'p', lwd = 2)
+grid(nx = NULL, ny=NULL, col = "lightgray")
+legend(x = "bottomright", legend = c("MICE Data Model","NA Dropped Data Model", "Mean/Mode Replaced Data Model"), lty = c(0,1,0), lwd = c(2,2,2), pch = c(1,NA,1), col = c("blue", "green", "red"), cex = 0.9)
+
+
+# Make confusion matrices with the best cutoff values
+rf_pred_temp <- ifelse(RF_MICE_PRED[,2] > rf_mice_cutoffs$best_kappa[1], "1", "0")
+rf_mice_conf <- confusionMatrix(as.factor(rf_pred_temp), as.factor(mice.test$hospital_death), positive = "1")
+
+rf_pred_temp <- ifelse(RF_DROP_PRED[,2] > rf_drop_cutoffs$best_kappa[1], "1", "0")
+rf_drop_conf <- confusionMatrix(as.factor(rf_pred_temp), as.factor(drop.test$hospital_death), positive = "1")
+
+rf_pred_temp <- ifelse(RF_MM_PRED[,2] > rf_mm_cutoffs$best_kappa[1], "1", "0")
+rf_mm_conf <- confusionMatrix(as.factor(rf_pred_temp), as.factor(mm.test$hospital_death), positive = "1")
+
+```
+
+```{r Random Forest Summary}
+rf_mice_summary
+rf_drop_summary
+rf_mm_summary
+
+rf_mice_conf
+rf_drop_conf
+rf_mm_conf
+
+
+```
+
+
+```{r ROC CURVE PLOTS, fig.align = 'center', fig.width = 6, fig.height = 6, echo=FALSE}
+# Create ROC curves (test data)
+
+mice.test.temp <- ifelse(mice.test$hospital_death == 1, 1, 0)
+drop.test.temp <- ifelse(drop.test$hospital_death == 1, 1, 0)
+mm.test.temp <- ifelse(mm.test$hospital_death == 1, 1, 0)
+
+# Lasso Curves
+lasso_pred_temp <- ifelse(LASSO_MICE_PRED[,2] > lasso_mice_cutoffs$best_kappa[1], 1, 0)
+roc_LASSO_MICE <- roc(mice.test.temp, lasso_pred_temp)
+#plot.roc(roc_LASSO_MICE, main = "Lasso Regression (MICE data set) ROC")
+
+lasso_pred_temp <- ifelse(LASSO_DROP_PRED[,2] > lasso_drop_cutoffs$best_kappa[1], 1, 0)
+roc_LASSO_DROP <- roc(drop.test.temp, lasso_pred_temp)
+#plot.roc(roc_LASSO_DROP, main = "Lasso Regression (DROP data set) ROC")
+
+lasso_pred_temp <- ifelse(LASSO_MM_PRED[,2] > lasso_mm_cutoffs$best_kappa[1], 1, 0)
+roc_LASSO_MM <- roc(mm.test.temp, lasso_pred_temp)
+#plot.roc(roc_LASSO_MM, main = "Lasso Regression (Mean-Mode data set) ROC")
+
+
+# Classification Tree Curves
+ct_pred_temp <- ifelse(CT_MICE_PROB[,2] > ct_mice_cutoffs$best_kappa[1], 1, 0)
+roc_CT_MICE <- roc(mice.test.temp, ct_pred_temp)
+#plot.roc(roc_CT_MICE, main = "Classification Tree (MICE data set) ROC")
+
+ct_pred_temp <- ifelse(CT_DROP_PROB[,2] > ct_drop_cutoffs$best_kappa[1], 1, 0)
+roc_CT_DROP <- roc(drop.test.temp, ct_pred_temp)
+#plot.roc(roc_CT_DROP, main = "Classification Tree (DROP data set) ROC")
+
+ct_pred_temp <- ifelse(CT_MM_PROB[,2] > ct_mm_cutoffs$best_kappa[1], 1, 0)
+roc_CT_MM <- roc(mm.test.temp, ct_pred_temp)
+#plot.roc(roc_CT_MM, main = "Classification Tree (Mean-Mode data set) ROC")
+
+
+
+# Random Forest Tree Curves
+rf_pred_temp <- ifelse(RF_MICE_PRED[,2] > rf_mice_cutoffs$best_kappa[1], 1, 0)
+roc_RF_MICE <- roc(mice.test.temp, rf_pred_temp)
+#plot.roc(roc_RF_MICE, main = "Random Forest Tree (MICE data set) ROC")
+
+rf_pred_temp <- ifelse(RF_DROP_PRED[,2] > rf_drop_cutoffs$best_kappa[1], 1, 0)
+roc_RF_DROP <- roc(drop.test.temp, rf_pred_temp)
+#plot.roc(roc_RF_DROP, main = "Random Forest Tree (DROP data set) ROC")
+
+rf_pred_temp <- ifelse(RF_MM_PRED[,2] > rf_mm_cutoffs$best_kappa[1], 1, 0)
+roc_RF_MM <- roc(mm.test.temp, rf_pred_temp)
+#plot.roc(roc_RF_MM, main = "Random Forest Tree (Mean-Mode data set) ROC")
+
+
+
+# Plot ROC curves for each type together for comparison
+
+# MICE Imputed Data Set
+plot.roc(roc_CT_MICE, main = "MICE Imputed Data Set ROC", col="navy", lty=2)
+lines(x=roc_LASSO_MICE$specificities, y=roc_LASSO_MICE$sensitivities, lty=2, lwd = 2, col="red")
+lines(x=roc_RF_MICE$specificities, y=roc_RF_MICE$sensitivities, lty=2, lwd=2, col="green")
+legend(x = "bottomright", legend = c("Class Tree", "Lasso Regression", "Random Forest Tree"), lty = c(2,2,2), lwd = c(2,2,2), col = c("navy", "red", "green"), cex = 0.9)
+
+# NA DROPPED Data Set
+plot.roc(roc_CT_DROP, main = "NA DROPPED Data Set ROC", col="navy", lty=2)
+lines(x=roc_LASSO_DROP$specificities, y=roc_LASSO_DROP$sensitivities, lty=2, lwd = 2, col="red")
+lines(x=roc_RF_DROP$specificities, y=roc_RF_DROP$sensitivities, lty=2, lwd=2, col="green")
+legend(x = "bottomright", legend = c("Class Tree", "Lasso Regression", "Random Forest Tree"), lty = c(2,2,2), lwd = c(2,2,2), col = c("navy", "red", "green"), cex = 0.9)
+
+# MEAN-MODE Imputed Data Set
+plot.roc(roc_CT_MM, main = "MEAN-MODE Imputed Data Set ROC", col="navy", lty=2)
+lines(x=roc_LASSO_MM$specificities, y=roc_LASSO_MM$sensitivities, lty=2, lwd = 2, col="red")
+lines(x=roc_RF_MM$specificities, y=roc_RF_MM$sensitivities, lty=2, lwd=2, col="green")
+legend(x = "bottomright", legend = c("Class Tree", "Lasso Regression", "Random Forest Tree"), lty = c(2,2,2), lwd = c(2,2,2), col = c("navy", "red", "green"), cex = 0.9)
+
+```
+
+
+``` {r Confusion Matrix Tables}
+# Print out all of the confusion matrix tables
+#CLASSIFICATION TREE: MICE IMPUTED DATA
+ct_mice_conf$table
+#CLASSIFICATION TREE: NA DROPPED DATA
+ct_drop_conf$table
+#CLASSIFICATION TREE: MEAN-MODE IMPUTED DATA
+ct_mm_conf$table
+
+#LASSO REGRESSION: MICE IMPUTED DATA
+lasso_mice_conf$table
+#LASSO REGRESSION: NA DROPPED DATA
+lasso_drop_conf$table
+#LASSO REGRESSION: MEAN-MODE IMPUTED DATA
+lasso_mm_conf$table
+
+#RANDOM FOREST TREE: MICE IMPUTED DATA
+rf_mice_conf$table
+#RANDOM FOREST TREE: NA DROPPED DATA
+rf_drop_conf$table
+#RANDOM FOREST TREE: MEAN-MODE IMPUTED DATA
+rf_mm_conf$table
+
+
+
+# Generate a data.frame of these tabular values for summary/analysis
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

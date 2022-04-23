@@ -168,23 +168,15 @@ RF_MICE <- train(hospital_death ~., data = mice.train, method = "rf",
                  ntree = 100, trControl = tC, tuneGrid = tG)
 
 
-#RF_MICE_PRED <- predict(RF_MICE, mice.test, type = 'prob')
-
-
 # RF_DROP
 set.seed(0)
 RF_DROP <- train(hospital_death ~., data = drop.train, method = "rf", 
                  ntree = 100, trControl = tC, tuneGrid = tG)
 
-#RF_DROP_PRED <- predict(RF_DROP, drop.test, type = 'prob')
-
-
 # RF_MM
 set.seed(0)
 RF_MM <- train(hospital_death ~., data = mm.train, method = "rf", 
                  ntree = 100, trControl = tC, tuneGrid = tG)
-
-#RF_Mm_PRED <- predict(RF_MM, mm.test, type = 'prob')
 
 save(RF_MICE, RF_DROP, RF_MM, file = "RFModels.RData")
 
