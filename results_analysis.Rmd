@@ -289,7 +289,7 @@ legend(x = "bottomright", legend = c("Class Tree", "Lasso Regression", "Random F
 ```
 
 
-``` {r Confusion Matrix Tables}
+``` {r Confusion Matrix Tables, echo=FALSE}
 # Print out all of the confusion matrix tables
 #CLASSIFICATION TREE: MICE IMPUTED DATA
 ct_mice_conf$table
@@ -315,6 +315,78 @@ rf_mm_conf$table
 
 
 # Generate a data.frame of these tabular values for summary/analysis
+tns <- list(ct_mice_conf$table[1], 
+            ct_drop_conf$table[1],
+            ct_mm_conf$table[1],
+            lasso_mice_conf$table[1],
+            lasso_drop_conf$table[1],
+            lasso_mm_conf$table[1],
+            rf_mice_conf$table[1],
+            rf_drop_conf$table[1],
+            rf_mm_conf$table[1])
+
+tps <- list(ct_mice_conf$table[4], 
+            ct_drop_conf$table[4],
+            ct_mm_conf$table[4],
+            lasso_mice_conf$table[4],
+            lasso_drop_conf$table[4],
+            lasso_mm_conf$table[4],
+            rf_mice_conf$table[4],
+            rf_drop_conf$table[4],
+            rf_mm_conf$table[4])
+
+fns <- list(ct_mice_conf$table[3], 
+            ct_drop_conf$table[3],
+            ct_mm_conf$table[3],
+            lasso_mice_conf$table[3],
+            lasso_drop_conf$table[3],
+            lasso_mm_conf$table[3],
+            rf_mice_conf$table[3],
+            rf_drop_conf$table[3],
+            rf_mm_conf$table[3])
+
+fps <- list(ct_mice_conf$table[2], 
+            ct_drop_conf$table[2],
+            ct_mm_conf$table[2],
+            lasso_mice_conf$table[2],
+            lasso_drop_conf$table[2],
+            lasso_mm_conf$table[2],
+            rf_mice_conf$table[2],
+            rf_drop_conf$table[2],
+            rf_mm_conf$table[2])
+
+models <- list("ClassTree",
+               "ClassTree",
+               "ClassTree",
+               "LassoRegres",
+               "LassoRegres",
+               "LassoRegres",
+               "RandomForest",
+               "RandomForest",
+               "RandomForest")
+
+imputes <- list("MICE",
+                 "NADropped",
+                 "MeanMode",
+                 "MICE",
+                 "NADropped",
+                 "MeanMode",
+                 "MICE",
+                 "NADropped",
+                 "MeanMode")
+
+results_table <- data.frame(TruePositive = unlist(tps), 
+                            TrueNegative = unlist(tns),
+                            FalsePositive = unlist(fps), 
+                            FalseNegative = unlist(fns),
+                            Model = unlist(models), 
+                            Imputation = unlist(imputes))
+
+```
+
+```{r Print out Results Table}
+
+results_table[1]
 
 ```
 

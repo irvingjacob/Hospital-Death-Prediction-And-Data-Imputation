@@ -22,7 +22,7 @@ hosp_drop <- hosp_munge(hosp)
 hosp_mm <- hosp_munge(hosp)
 
 # Drop na for dropped set
-hosp_drop <- drop_na(hospital)
+hosp_drop <- drop_na(hosp_na)
 
 # Replace na with mode/mean for hosp_mm
 hosp_mm <- hosp_mode_mean(hosp_mm)
