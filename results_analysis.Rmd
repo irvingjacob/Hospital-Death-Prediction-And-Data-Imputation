@@ -20,6 +20,7 @@ load("6modelResults.RData")
 #load("baggedModels.RData")
 load("RFModels.RData")
 load("RFPredictions.RData")
+load("NEW_drop_data.RData")
 
 ```
 
@@ -289,7 +290,7 @@ legend(x = "bottomright", legend = c("Class Tree", "Lasso Regression", "Random F
 ```
 
 
-``` {r Confusion Matrix Tables, echo=FALSE}
+``` {r Confusion Matrix Tables}
 # Print out all of the confusion matrix tables
 #CLASSIFICATION TREE: MICE IMPUTED DATA
 ct_mice_conf$table
