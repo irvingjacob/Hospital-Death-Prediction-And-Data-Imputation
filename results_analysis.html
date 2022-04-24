@@ -993,45 +993,75 @@ rf_mm_conf$table</code></pre>
 ##          0 24274  1369
 ##          1   876   995</code></pre>
 <pre class="r"><code># Generate a data.frame of these tabular values for summary/analysis
-tns &lt;- list(ct_mice_conf$table[1], 
-            ct_drop_conf$table[1],
-            ct_mm_conf$table[1],
-            lasso_mice_conf$table[1],
-            lasso_drop_conf$table[1],
-            lasso_mm_conf$table[1],
-            rf_mice_conf$table[1],
-            rf_drop_conf$table[1],
-            rf_mm_conf$table[1])
+tns &lt;- list(ct_mice_conf$table[1]/sum(ct_mice_conf$table), 
+            ct_drop_conf$table[1]/sum(ct_drop_conf$table),
+            ct_mm_conf$table[1]/sum(ct_mm_conf$table),
+            lasso_mice_conf$table[1]/sum(lasso_mice_conf$table),
+            lasso_drop_conf$table[1]/sum(lasso_drop_conf$table),
+            lasso_mm_conf$table[1]/sum(lasso_mm_conf$table),
+            rf_mice_conf$table[1]/sum(rf_mice_conf$table),
+            rf_drop_conf$table[1]/sum(rf_drop_conf$table),
+            rf_mm_conf$table[1]/sum(rf_mm_conf$table))
 
-tps &lt;- list(ct_mice_conf$table[4], 
-            ct_drop_conf$table[4],
-            ct_mm_conf$table[4],
-            lasso_mice_conf$table[4],
-            lasso_drop_conf$table[4],
-            lasso_mm_conf$table[4],
-            rf_mice_conf$table[4],
-            rf_drop_conf$table[4],
-            rf_mm_conf$table[4])
+tps &lt;- list(ct_mice_conf$table[4]/sum(ct_mice_conf$table), 
+            ct_drop_conf$table[4]/sum(ct_drop_conf$table),
+            ct_mm_conf$table[4]/sum(ct_mm_conf$table),
+            lasso_mice_conf$table[4]/sum(lasso_mice_conf$table),
+            lasso_drop_conf$table[4]/sum(lasso_drop_conf$table),
+            lasso_mm_conf$table[4]/sum(lasso_mm_conf$table),
+            rf_mice_conf$table[4]/sum(rf_mice_conf$table),
+            rf_drop_conf$table[4]/sum(rf_drop_conf$table),
+            rf_mm_conf$table[4]/sum(rf_mm_conf$table))
 
-fns &lt;- list(ct_mice_conf$table[3], 
-            ct_drop_conf$table[3],
-            ct_mm_conf$table[3],
-            lasso_mice_conf$table[3],
-            lasso_drop_conf$table[3],
-            lasso_mm_conf$table[3],
-            rf_mice_conf$table[3],
-            rf_drop_conf$table[3],
-            rf_mm_conf$table[3])
+fns &lt;- list(ct_mice_conf$table[3]/sum(ct_mice_conf$table), 
+            ct_drop_conf$table[3]/sum(ct_drop_conf$table),
+            ct_mm_conf$table[3]/sum(ct_mm_conf$table),
+            lasso_mice_conf$table[3]/sum(lasso_mice_conf$table),
+            lasso_drop_conf$table[3]/sum(lasso_drop_conf$table),
+            lasso_mm_conf$table[3]/sum(lasso_mm_conf$table),
+            rf_mice_conf$table[3]/sum(rf_mice_conf$table),
+            rf_drop_conf$table[3]/sum(rf_drop_conf$table),
+            rf_mm_conf$table[3]/sum(rf_mm_conf$table))
 
-fps &lt;- list(ct_mice_conf$table[2], 
-            ct_drop_conf$table[2],
-            ct_mm_conf$table[2],
-            lasso_mice_conf$table[2],
-            lasso_drop_conf$table[2],
-            lasso_mm_conf$table[2],
-            rf_mice_conf$table[2],
-            rf_drop_conf$table[2],
-            rf_mm_conf$table[2])
+fps &lt;- list(ct_mice_conf$table[2]/sum(ct_mice_conf$table), 
+            ct_drop_conf$table[2]/sum(ct_drop_conf$table),
+            ct_mm_conf$table[2]/sum(ct_mm_conf$table),
+            lasso_mice_conf$table[2]/sum(lasso_mice_conf$table),
+            lasso_drop_conf$table[2]/sum(lasso_drop_conf$table),
+            lasso_mm_conf$table[2]/sum(lasso_mm_conf$table),
+            rf_mice_conf$table[2]/sum(rf_mice_conf$table),
+            rf_drop_conf$table[2]/sum(rf_drop_conf$table),
+            rf_mm_conf$table[2]/sum(rf_mm_conf$table))
+
+cutoffs &lt;- list(ct_mice_cutoffs$best_kappa[1],
+                ct_drop_cutoffs$best_kappa[1],
+                ct_mm_cutoffs$best_kappa[1],
+                lasso_mice_cutoffs$best_kappa[1],
+                lasso_drop_cutoffs$best_kappa[1],
+                lasso_mm_cutoffs$best_kappa[1],
+                rf_mice_cutoffs$best_kappa[1],
+                rf_drop_cutoffs$best_kappa[1],
+                rf_mm_cutoffs$best_kappa[1])
+
+kappas &lt;- list(ct_mice_cutoffs$best_kappa[3],
+                ct_drop_cutoffs$best_kappa[3],
+                ct_mm_cutoffs$best_kappa[3],
+                lasso_mice_cutoffs$best_kappa[3],
+                lasso_drop_cutoffs$best_kappa[3],
+                lasso_mm_cutoffs$best_kappa[3],
+                rf_mice_cutoffs$best_kappa[3],
+                rf_drop_cutoffs$best_kappa[3],
+                rf_mm_cutoffs$best_kappa[3])
+
+accs &lt;- list(ct_mice_cutoffs$best_kappa[2],
+                ct_drop_cutoffs$best_kappa[2],
+                ct_mm_cutoffs$best_kappa[2],
+                lasso_mice_cutoffs$best_kappa[2],
+                lasso_drop_cutoffs$best_kappa[2],
+                lasso_mm_cutoffs$best_kappa[2],
+                rf_mice_cutoffs$best_kappa[2],
+                rf_drop_cutoffs$best_kappa[2],
+                rf_mm_cutoffs$best_kappa[2])
 
 models &lt;- list(&quot;ClassTree&quot;,
                &quot;ClassTree&quot;,
@@ -1053,23 +1083,36 @@ imputes &lt;- list(&quot;MICE&quot;,
                  &quot;NADropped&quot;,
                  &quot;MeanMode&quot;)
 
-results_table &lt;- data.frame(TruePositive = unlist(tps), 
+results_table &lt;- data.frame(Model = unlist(models),
+                            Imputation = unlist(imputes),
+                            Kappa = unlist(kappas),
+                            Accuracy = unlist(accs),
+                            CutoffVal = unlist(cutoffs),
+                            TruePositive = unlist(tps), 
                             TrueNegative = unlist(tns),
                             FalsePositive = unlist(fps), 
-                            FalseNegative = unlist(fns),
-                            Model = unlist(models), 
-                            Imputation = unlist(imputes))</code></pre>
+                            FalseNegative = unlist(fns))</code></pre>
 <pre class="r"><code>results_table</code></pre>
-<pre><code>##   TruePositive TrueNegative FalsePositive FalseNegative        Model Imputation
-## 1          622        24597           553          1742    ClassTree       MICE
-## 2          495        16586           662          1057    ClassTree  NADropped
-## 3          705        24169           981          1659    ClassTree   MeanMode
-## 4         1080        23822          1328          1284  LassoRegres       MICE
-## 5          738        16254           994           814  LassoRegres  NADropped
-## 6         1059        23826          1324          1305  LassoRegres   MeanMode
-## 7         1014        24251           899          1350 RandomForest       MICE
-## 8          662        16566           682           890 RandomForest  NADropped
-## 9          995        24274           876          1369 RandomForest   MeanMode</code></pre>
+<pre><code>##          Model Imputation     Kappa  Accuracy CutoffVal TruePositive
+## 1    ClassTree       MICE 0.3122747 0.9165879      0.28   0.02260667
+## 2    ClassTree  NADropped 0.3173077 0.9085638      0.14   0.02632979
+## 3    ClassTree   MeanMode 0.2979243 0.9040488      0.18   0.02562332
+## 4  LassoRegres       MICE 0.4006713 0.9050665      0.24   0.03925274
+## 5  LassoRegres  NADropped 0.3969385 0.9038298      0.23   0.03925532
+## 6  LassoRegres   MeanMode 0.3938913 0.9044486      0.24   0.03848950
+## 7 RandomForest       MICE 0.4303835 0.9182598      0.33   0.03685397
+## 8 RandomForest  NADropped 0.4121380 0.9163830      0.31   0.03521277
+## 9 RandomForest   MeanMode 0.4263429 0.9184052      0.33   0.03616341
+##   TrueNegative FalsePositive FalseNegative
+## 1    0.8939812    0.02009886    0.06331322
+## 2    0.8822340    0.03521277    0.05622340
+## 3    0.8784255    0.03565458    0.06029658
+## 4    0.8658138    0.04826634    0.04666715
+## 5    0.8645745    0.05287234    0.04329787
+## 6    0.8659591    0.04812096    0.04743040
+## 7    0.8814058    0.03267427    0.04906593
+## 8    0.8811702    0.03627660    0.04734043
+## 9    0.8822418    0.03183834    0.04975649</code></pre>
 
 
 

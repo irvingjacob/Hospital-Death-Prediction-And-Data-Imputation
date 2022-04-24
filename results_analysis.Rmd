@@ -321,45 +321,75 @@ rf_mm_conf$table
 
 
 # Generate a data.frame of these tabular values for summary/analysis
-tns <- list(ct_mice_conf$table[1], 
-            ct_drop_conf$table[1],
-            ct_mm_conf$table[1],
-            lasso_mice_conf$table[1],
-            lasso_drop_conf$table[1],
-            lasso_mm_conf$table[1],
-            rf_mice_conf$table[1],
-            rf_drop_conf$table[1],
-            rf_mm_conf$table[1])
+tns <- list(ct_mice_conf$table[1]/sum(ct_mice_conf$table), 
+            ct_drop_conf$table[1]/sum(ct_drop_conf$table),
+            ct_mm_conf$table[1]/sum(ct_mm_conf$table),
+            lasso_mice_conf$table[1]/sum(lasso_mice_conf$table),
+            lasso_drop_conf$table[1]/sum(lasso_drop_conf$table),
+            lasso_mm_conf$table[1]/sum(lasso_mm_conf$table),
+            rf_mice_conf$table[1]/sum(rf_mice_conf$table),
+            rf_drop_conf$table[1]/sum(rf_drop_conf$table),
+            rf_mm_conf$table[1]/sum(rf_mm_conf$table))
 
-tps <- list(ct_mice_conf$table[4], 
-            ct_drop_conf$table[4],
-            ct_mm_conf$table[4],
-            lasso_mice_conf$table[4],
-            lasso_drop_conf$table[4],
-            lasso_mm_conf$table[4],
-            rf_mice_conf$table[4],
-            rf_drop_conf$table[4],
-            rf_mm_conf$table[4])
+tps <- list(ct_mice_conf$table[4]/sum(ct_mice_conf$table), 
+            ct_drop_conf$table[4]/sum(ct_drop_conf$table),
+            ct_mm_conf$table[4]/sum(ct_mm_conf$table),
+            lasso_mice_conf$table[4]/sum(lasso_mice_conf$table),
+            lasso_drop_conf$table[4]/sum(lasso_drop_conf$table),
+            lasso_mm_conf$table[4]/sum(lasso_mm_conf$table),
+            rf_mice_conf$table[4]/sum(rf_mice_conf$table),
+            rf_drop_conf$table[4]/sum(rf_drop_conf$table),
+            rf_mm_conf$table[4]/sum(rf_mm_conf$table))
 
-fns <- list(ct_mice_conf$table[3], 
-            ct_drop_conf$table[3],
-            ct_mm_conf$table[3],
-            lasso_mice_conf$table[3],
-            lasso_drop_conf$table[3],
-            lasso_mm_conf$table[3],
-            rf_mice_conf$table[3],
-            rf_drop_conf$table[3],
-            rf_mm_conf$table[3])
+fns <- list(ct_mice_conf$table[3]/sum(ct_mice_conf$table), 
+            ct_drop_conf$table[3]/sum(ct_drop_conf$table),
+            ct_mm_conf$table[3]/sum(ct_mm_conf$table),
+            lasso_mice_conf$table[3]/sum(lasso_mice_conf$table),
+            lasso_drop_conf$table[3]/sum(lasso_drop_conf$table),
+            lasso_mm_conf$table[3]/sum(lasso_mm_conf$table),
+            rf_mice_conf$table[3]/sum(rf_mice_conf$table),
+            rf_drop_conf$table[3]/sum(rf_drop_conf$table),
+            rf_mm_conf$table[3]/sum(rf_mm_conf$table))
 
-fps <- list(ct_mice_conf$table[2], 
-            ct_drop_conf$table[2],
-            ct_mm_conf$table[2],
-            lasso_mice_conf$table[2],
-            lasso_drop_conf$table[2],
-            lasso_mm_conf$table[2],
-            rf_mice_conf$table[2],
-            rf_drop_conf$table[2],
-            rf_mm_conf$table[2])
+fps <- list(ct_mice_conf$table[2]/sum(ct_mice_conf$table), 
+            ct_drop_conf$table[2]/sum(ct_drop_conf$table),
+            ct_mm_conf$table[2]/sum(ct_mm_conf$table),
+            lasso_mice_conf$table[2]/sum(lasso_mice_conf$table),
+            lasso_drop_conf$table[2]/sum(lasso_drop_conf$table),
+            lasso_mm_conf$table[2]/sum(lasso_mm_conf$table),
+            rf_mice_conf$table[2]/sum(rf_mice_conf$table),
+            rf_drop_conf$table[2]/sum(rf_drop_conf$table),
+            rf_mm_conf$table[2]/sum(rf_mm_conf$table))
+
+cutoffs <- list(ct_mice_cutoffs$best_kappa[1],
+                ct_drop_cutoffs$best_kappa[1],
+                ct_mm_cutoffs$best_kappa[1],
+                lasso_mice_cutoffs$best_kappa[1],
+                lasso_drop_cutoffs$best_kappa[1],
+                lasso_mm_cutoffs$best_kappa[1],
+                rf_mice_cutoffs$best_kappa[1],
+                rf_drop_cutoffs$best_kappa[1],
+                rf_mm_cutoffs$best_kappa[1])
+
+kappas <- list(ct_mice_cutoffs$best_kappa[3],
+                ct_drop_cutoffs$best_kappa[3],
+                ct_mm_cutoffs$best_kappa[3],
+                lasso_mice_cutoffs$best_kappa[3],
+                lasso_drop_cutoffs$best_kappa[3],
+                lasso_mm_cutoffs$best_kappa[3],
+                rf_mice_cutoffs$best_kappa[3],
+                rf_drop_cutoffs$best_kappa[3],
+                rf_mm_cutoffs$best_kappa[3])
+
+accs <- list(ct_mice_cutoffs$best_kappa[2],
+                ct_drop_cutoffs$best_kappa[2],
+                ct_mm_cutoffs$best_kappa[2],
+                lasso_mice_cutoffs$best_kappa[2],
+                lasso_drop_cutoffs$best_kappa[2],
+                lasso_mm_cutoffs$best_kappa[2],
+                rf_mice_cutoffs$best_kappa[2],
+                rf_drop_cutoffs$best_kappa[2],
+                rf_mm_cutoffs$best_kappa[2])
 
 models <- list("ClassTree",
                "ClassTree",
@@ -381,12 +411,15 @@ imputes <- list("MICE",
                  "NADropped",
                  "MeanMode")
 
-results_table <- data.frame(TruePositive = unlist(tps), 
+results_table <- data.frame(Model = unlist(models),
+                            Imputation = unlist(imputes),
+                            Kappa = unlist(kappas),
+                            Accuracy = unlist(accs),
+                            CutoffVal = unlist(cutoffs),
+                            TruePositive = unlist(tps), 
                             TrueNegative = unlist(tns),
                             FalsePositive = unlist(fps), 
-                            FalseNegative = unlist(fns),
-                            Model = unlist(models), 
-                            Imputation = unlist(imputes))
+                            FalseNegative = unlist(fns))
 
 ```
 
