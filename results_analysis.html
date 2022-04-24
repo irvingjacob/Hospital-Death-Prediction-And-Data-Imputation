@@ -1059,17 +1059,17 @@ results_table &lt;- data.frame(TruePositive = unlist(tps),
                             FalseNegative = unlist(fns),
                             Model = unlist(models), 
                             Imputation = unlist(imputes))</code></pre>
-<pre class="r"><code>results_table[1]</code></pre>
-<pre><code>##   TruePositive
-## 1          622
-## 2          495
-## 3          705
-## 4         1080
-## 5          738
-## 6         1059
-## 7         1014
-## 8          662
-## 9          995</code></pre>
+<pre class="r"><code>results_table</code></pre>
+<pre><code>##   TruePositive TrueNegative FalsePositive FalseNegative        Model Imputation
+## 1          622        24597           553          1742    ClassTree       MICE
+## 2          495        16586           662          1057    ClassTree  NADropped
+## 3          705        24169           981          1659    ClassTree   MeanMode
+## 4         1080        23822          1328          1284  LassoRegres       MICE
+## 5          738        16254           994           814  LassoRegres  NADropped
+## 6         1059        23826          1324          1305  LassoRegres   MeanMode
+## 7         1014        24251           899          1350 RandomForest       MICE
+## 8          662        16566           682           890 RandomForest  NADropped
+## 9          995        24274           876          1369 RandomForest   MeanMode</code></pre>
 
 
 
