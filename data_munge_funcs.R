@@ -114,7 +114,9 @@ cutoff_opt <- function(test_data, userpred, pos_val) {
 }
 
 
+
 ### R function for creating 2 partitions with training and test set
+### This tool courtesy of Dr. Shuchismita Sarkar.
 ### Input: original dataset name (data)
 ###        proportion of records assigned to training set (prop.train)
 ### Output: data.train, data.test

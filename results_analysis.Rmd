@@ -426,6 +426,7 @@ results_table <- data.frame(Model = unlist(models),
 ```{r Print out Results Table}
 
 results_table
+write.csv(results_table, "Results_table.csv", row.names = FALSE)
 
 ```
 
