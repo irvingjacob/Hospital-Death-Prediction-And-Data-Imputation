@@ -129,3 +129,53 @@ partition.2 <- function(data, prop.train){
   data.test <- data[rest,]
   return(list(data.train=data.train, data.test=data.test))
 }
+
+
+# cross_compare <- function(model_list_1, model_list_2) {
+#   # model_list = c(model, test_data, type)
+# 
+#   # extract inputs
+#   mod.1 <- model_list_1[1]
+#   mod.2 <- model_list_2[1]
+#   test.1 <- model_list_1[2]
+#   test.2 <- model_list_2[2]
+#   type.1 <- model_list_1[3]
+#   type.2 <- model_list_2[3]
+# 
+#   # compute predictions with cross test data
+#   if (type.1 == "CT") {
+#     model.1.pred <- predict(mod.1, test.2, type = "prob")
+#   } else {
+#     model.1.pred <- predict(mod.1, test.2, type = "prob")
+#   }
+# 
+#   if (type.2 == "CT") {
+#     model.2.pred <- predict(mod.2, test.1, type = "prob")
+#   } else {
+#     model.2.pred <- predict(mod.2, test.1, type = "prob")
+#   }
+# 
+#   # iterate to determine best cutoff
+#   cut.res.1 <- cutoff_opt(test.2, model.1.pred, pos_val = "1")
+#   cut.res.2 <- cutoff_opt(test.1, model.2.pred, pos_val = "1")
+# 
+#   # best cutoffs
+#   cut.1.best <- cut.res.1$best_kappa[1]
+#   cut.2.best <- cut.res.2$best_kappa[1]
+# 
+#   # update predictions with cutoff values
+#   preds.1 <- ifelse(model.1.pred[,2] > cut.1.best, "1", "0")
+#   preds.2 <- ifelse(model.2.pred[,2] > cut.2.best, "1", "0")
+# 
+#   # generate confusion matrices
+#   conf.1 <- confusionMatrix(as.factor(preds.1),
+#                             as.factor(test.2$hospital_death), positive = "1")
+#   conf.2 <- confusionMatrix(as.factor(preds.2),
+#                             as.factor(test.1$hospital_death), positive = "1")
+# 
+# 
+#   # return results
+#   return(list(conf.1 = conf.1, conf.2 = conf.2))
+# 
+# 
+# }

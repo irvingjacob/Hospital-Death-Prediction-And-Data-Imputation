@@ -82,6 +82,11 @@ lasso_mice_conf
 lasso_drop_conf
 lasso_mm_conf
 
+coef(LASSO_MICE$finalModel, LASSO_MICE$bestTune$lambda)
+coef(LASSO_DROP$finalModel, LASSO_DROP$bestTune$lambda)
+coef(LASSO_MM$finalModel, LASSO_MM$bestTune$lambda)
+
+
 ```
 
 ```{r include=FALSE}
@@ -390,8 +395,6 @@ results_table <- data.frame(TruePositive = unlist(tps),
 results_table[1]
 
 ```
-
-
 
 
 
